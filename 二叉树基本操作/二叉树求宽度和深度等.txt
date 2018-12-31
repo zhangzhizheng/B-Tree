@@ -1,0 +1,391 @@
+#include<stdio.h>
+#include<malloc.h>
+#define MaxSize 100
+#define MaxWidth 40
+typedef char ElemType;
+typedef struct node
+{
+    ElemType data;//数据类型
+    struct node *lchild;//指向左孩子
+    struct node *rchild;//指向右孩子
+}BTNode;
+void CreateBTNode(BTNode *&b,char *str)//由str串创建二叉链
+{
+    BTNode *St[MaxSize],*p=NULL;
+    int top=-1,k,j=0;
+    char ch;
+    b=NULL;//建立二叉链初始时为空
+    ch=str[j];
+    while(ch!='\0')//str未扫描完时循环
+    {
+        switch(ch)
+        {
+        case'(':top++;St[top]=p;k=1;break;//为左结点
+        case')':top--;break;
+        case',':k=2;break;//为右结点
+        default:p=(BTNode *)malloc(sizeof(BTNode));
+            p->data=ch;
+            p->lchild=p->rchild=NULL;
+            if(b==NULL)//p指向二叉树的根结点
+                b=p;
+            else//已建立二叉树根结点
+            {
+                switch(k)
+                {
+                case 1:St[top]->lchild=p;break;
+                case 2:St[top]->rchild=p;break;
+                }
+            }
+        }
+        j++;
+        ch=str[j];
+    }
+}
+BTNode *FindNode(BTNode *b,ElemType x)//返回data域为x的结点指针
+{
+    BTNode *p;
+    if(b==NULL)
+        return NULL;
+    else if(b->data==x)
+        return b;
+    else
+    {
+        p=FindNode(b->lchild,x);
+        if(p!=NULL)
+            return p;
+        else
+            return FindNode(b->rchild,x);
+    }
+}
+BTNode *LchildNode(BTNode *p)//返回*p结点的左孩子结点指针
+{
+    return p->lchild;
+}
+BTNode *RchildNode(BTNode *p)//返回*p结点的右孩子结点指针
+{
+    return p->rchild;
+}
+int BTNodeDepth(BTNode *b)//求二叉树b的深度
+{
+    int lchilddep,rchilddep;
+    if(b==NULL)
+        return (0);//空树的深度为0
+    else
+    {
+        lchilddep=BTNodeDepth(b->lchild);
+        rchilddep=BTNodeDepth(b->rchild);
+        return(lchilddep>rchilddep)?(lchilddep+1):(rchilddep+1);
+    }
+}
+void DispBTNode(BTNode *b)//以括号表示法输出二叉树
+{
+    if(b!=NULL)
+    {
+        printf(" %c",b->data);
+        if(b->lchild!=NULL||b->rchild!=NULL)
+        {
+            printf("(");
+            DispBTNode(b->lchild);
+            if(b->rchild!=NULL) printf(",");
+            DispBTNode(b->rchild);
+            printf(")");
+        }
+    }
+}
+
+int BTNodeWidth(BTNode *b)
+{
+	struct
+	{
+		int lno;		//节点的层次编号
+		BTNode *p;		//节点指针
+	}Qu[MaxSize];		//定义顺序非循环队列
+	int front,rear;							//定义队首和队尾指针
+	int lnum,max,i,n;
+	front=rear=0;							//置队列为空队
+    if (b!=NULL)
+	{
+		rear++;
+		Qu[rear].p=b;						//根节点指针入队
+		Qu[rear].lno=1;						//根节点的层次编号为1
+		while (rear!=front)					//队列不为空
+		{
+			front++;
+			b=Qu[front].p;					//队头出队
+			lnum=Qu[front].lno;
+			if (b->lchild!=NULL)			//左孩子入队
+			{
+				rear++;
+				Qu[rear].p=b->lchild;
+				Qu[rear].lno=lnum+1;
+			}
+			if (b->rchild!=NULL)			//右孩子入队
+			{
+				rear++;
+				Qu[rear].p=b->rchild;
+				Qu[rear].lno=lnum+1;
+			}
+		}
+		max=0;lnum=1;i=1;
+		while (i<=rear)
+		{
+			n=0;
+			while (i<=rear && Qu[i].lno==lnum)
+			{
+				n++;i++;
+			}
+			lnum=Qu[i].lno;
+			if (n>max) max=n;
+		}
+		return max;
+	}
+	else
+		return 0;
+}
+int Nodes(BTNode *b)//求二叉树b结点的个数
+{
+    int num1,num2;
+    if(b==NULL)//空树的情况
+        return 0;
+    else if(b->lchild==NULL&&b->rchild==NULL)//为叶子结点的情况
+        return 1;
+    else//其他情况
+    {
+        num1=Nodes(b->lchild);
+        num2=Nodes(b->rchild);
+        return (num1+num2+1);//返回左右树结点树加1
+    }
+}
+int LeafNodes(BTNode *b)//求二叉树b叶子结点个数
+{
+    int num1,num2;
+    if(b==NULL)//空树的情况
+        return 0;
+    else if(b->lchild==NULL&&b->rchild==NULL)//为叶子结点的情况
+        return 1;
+    else//其他情况
+    {
+        num1=LeafNodes(b->lchild);
+        num2=LeafNodes(b->rchild);
+        return (num1+num2);//返回左右子树叶子结点树
+    }
+}
+void PreOrder(BTNode *b)
+{
+    if(b!=NULL)
+    {
+        printf("%c",b->data);
+        PreOrder(b->lchild);
+        PreOrder(b->rchild);
+    }
+}
+void InOrder(BTNode *b)
+{
+    if(b!=NULL)
+    {
+
+        InOrder(b->lchild);
+        printf("%c",b->data);
+        InOrder(b->rchild);
+
+    }
+}
+void PostOrder(BTNode *b)
+{
+    if(b!=NULL)
+    {
+        PostOrder(b->lchild);
+        PostOrder(b->rchild);
+        printf("%c",b->data);
+    }
+}
+void ALLPath2(BTNode *b)
+{
+    struct snode
+    {
+        BTNode *node;
+        int parent;
+
+    }qu[MaxSize];
+    BTNode *q;
+    int front,rear,p;
+    front=rear=-1;
+    rear++;
+    qu[rear].node=b;
+    qu[rear].parent=-1;
+    while(front!=rear)
+    {
+        front++;
+        q=qu[front].node;
+        if(q->lchild==NULL&&q->rchild==NULL)
+        {
+            p=front;
+            while(qu[p].parent!=-1)
+            {
+                printf("%c->",qu[p].node->data);
+                p=qu[p].parent;
+
+            }
+            printf("%c\n",qu[p].node->data);
+        }
+        if(q->lchild!=NULL)
+        {
+            rear++;
+            qu[rear].node=q->lchild;
+            qu[rear].parent=front;
+
+        }
+        if(q->rchild!=NULL)
+        {
+            rear++;
+            qu[rear].node=q->rchild;
+            qu[rear].parent=front;
+
+        }
+
+    }
+}
+BTNode *CreateBT1(char *pre,char *in,int n)
+{
+	BTNode *s;
+	char *p;
+	int k;
+	if (n<=0) return NULL;
+	s=(BTNode *)malloc(sizeof(BTNode));		//创建二叉树结点*s
+	s->data=*pre;
+	for (p=in;p<in+n;p++)		//在中序序列中找等于*ppos的位置k
+		if (*p==*pre)
+			break;
+	k=p-in;
+	s->lchild=CreateBT1(pre+1,in,k);
+	s->rchild=CreateBT1(pre+k+1,p+1,n-k-1);
+	return s;
+}
+BTNode *CreateBT2(char *post,char *in,int n,int m)
+{
+	BTNode *s;
+	char *p,*q,*maxp;
+	int maxpost,maxin,k;
+	if (n<=0) return NULL;
+	maxpost=-1;
+	for (p=in;p<in+n;p++)			//求in中全部字符中在post中最右边的那个字符
+		for (q=post;q<post+m;q++)	//在in中用maxp指向这个字符,用maxin标识它在in中的下标
+			if (*p==*q)
+			{
+				k=q-post;
+				if (k>maxpost)
+				{
+					maxpost=k;
+					maxp=p;
+					maxin=p-in;
+				}
+			}
+	s=(BTNode *)malloc(sizeof(BTNode));		//创建二叉树结点*s
+	s->data=post[maxpost];
+	s->lchild=CreateBT2(post,in,maxin,m);
+	s->rchild=CreateBT2(post,maxp+1,n-maxin-1,m);
+	return s;
+}
+void DispBTNode1(BTNode *b)  //以凹入表表示法输出一棵二叉树
+{
+	BTNode *St[MaxSize],*p;
+	int level[MaxSize][2],top=-1,n,i,width=4;
+	char type;
+	if (b!=NULL)
+	{
+		top++;
+		St[top]=b;						//根结点入栈
+		level[top][0]=width;
+		level[top][1]=2;				//2表示是根
+		while (top>-1)
+		{
+			p=St[top];					//退栈并凹入显示该结点值
+			n=level[top][0];
+			switch(level[top][1])
+			{
+			case 0:type='L';break;		//左结点之后输出(L)
+			case 1:type='R';break;		//右结点之后输出(R)
+			case 2:type='B';break;		//根结点之后前输出(B)
+			}
+			for (i=1;i<=n;i++)			//其中n为显示场宽,字符以右对齐显示
+				printf(" ");
+			printf("%c(%c)",p->data,type);
+			for (i=n+1;i<=MaxWidth;i+=2)
+				printf("--");
+			printf("\n");
+			top--;
+			if (p->rchild!=NULL)
+			{							//将右子树根结点入栈
+				top++;
+				St[top]=p->rchild;
+				level[top][0]=n+width;	//显示场宽增width
+				level[top][1]=1;		//1表示是右子树
+			}
+			if (p->lchild!=NULL)
+			{							//将左子树根结点入栈
+				top++;
+				St[top]=p->lchild;
+				level[top][0]=n+width;  //显示场宽增width
+				level[top][1]=0;        //0表示是左子树
+			}
+		}
+	}
+}
+
+int main()
+{
+    BTNode *b,*p,*lp,*rp;
+    CreateBTNode(b,"A(B(D,E(H(J,K(L,M(,N))))),C(F,G(,I)))");
+    printf("(1)输出二叉树:");
+    DispBTNode(b);
+    printf("\n");
+    printf("(2)'H'结点:");
+    p=FindNode(b,'H');
+    if(p!=NULL)
+    {
+        lp=LchildNode(p);
+        if(lp!=NULL)
+            printf("左孩子为%c",lp->data);
+        else
+            printf("无左孩子");
+        rp=RchildNode(p);
+        if(rp!=NULL)
+            printf(" 右孩子为%c",rp->data);
+        else
+            printf(" 无右孩子");
+    }
+    printf("\n");
+    printf("(3)二叉树b的深度:%d\n",BTNodeDepth(b));
+    printf("(4)二叉树b的宽度:%d\n",BTNodeWidth(b));
+    printf("(5)二叉树b的结点个数:%d\n",Nodes(b));
+    printf("(6)二叉树b的叶子结点个数:%d",LeafNodes(b));
+    printf("\n");
+    printf("(7)先序遍历:");
+    PreOrder(b);
+    printf("\n");
+    printf("(8)中序遍历:");
+    InOrder(b);
+    printf("\n");
+    printf("(9)后序遍历:");
+    PostOrder(b);
+    printf("\n");
+    printf("(10)层序遍历:\n");
+    ALLPath2(b);
+    ElemType pre[]="ABDEHJKLMNCFGI";
+	ElemType in[]="DBJHLKMNEAFCGI";
+	ElemType post[]="DJLNMKHEBFIGCA";
+	b=CreateBT1(pre,in,14);
+	printf("(11)先序序列:%s\n",pre);
+	printf("中序序列:%s\n",in);
+	printf("构造一棵二叉树b:\n");
+	printf("括号表示法:");DispBTNode(b);printf("\n");
+	printf("凹入表示法:\n");DispBTNode1(b);printf("\n\n");
+	printf("(12)中序序列:%s\n",in);
+	printf("后序序列:%s\n",post);
+	b=CreateBT2(post,in,14,14);
+	printf("构造一棵二叉树b:\n");
+	printf("括号表示法:");DispBTNode(b);printf("\n");
+	printf("凹入表示法:\n");DispBTNode1(b);printf("\n");
+    return 0;
+}
+
